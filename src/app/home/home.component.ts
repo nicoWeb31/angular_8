@@ -1,31 +1,32 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import {PropertiesService} from '../services/properties.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit,OnDestroy {
 
 
   properties = [];
+
+  propertiesSubscription : Subscription;
 
   constructor(
     private propertiesSerivce : PropertiesService
   ) { }
 
   ngOnInit(): void {
-    this.propertiesSerivce.getProperties().then(
+    this.propertiesSubscription = this.propertiesSerivce.propertiesSubject.subscribe(
       (data: any)=>{
-        console.log(data);
         this.properties = data;
       }
-    ).catch(
-      (error)=>{
-        console.error(error);
-      }
-    )
+    );
+    this.propertiesSerivce.emitProperties();
+
+
   }
 
 
@@ -37,4 +38,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  ngOnDestroy(){
+    this.propertiesSubscription.unsubscribe;  // desabonnement de l'observable
+  }
 }
